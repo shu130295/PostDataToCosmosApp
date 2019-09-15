@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,14 +9,42 @@ namespace PostDataToCosmos
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            // The code provided will print ‘Hello World’ to the console.
-            // Press Ctrl+F5 (or go to Debug > Start Without Debugging) to run your app.
-            Console.WriteLine("Hello World!");
-            Console.ReadKey();
+            DocumentDBRepository<Location>.Initialize();
+            string filePath = @"C:\Users\shubh\Documents\SampleCsvToPostToCosmos.csv";
 
-            // Go to http://aka.ms/dotnet-get-started-console to continue learning how to build a console app! 
+            if (File.Exists(filePath))
+            {
+                using (StreamReader sr = File.OpenText(filePath))
+                {
+                    string s = "";
+                    while ((s = sr.ReadLine()) != null)
+                    {
+                        var values = s.Split(',');
+                        Location loc = new Location()
+                        {
+                            latitude = Convert.ToDouble(values[0]),
+                            longitude = Convert.ToDouble(values[1]),
+                            locality = values[2],
+                            sublocality = values[3]
+                        };
+
+                        await DocumentDBRepository<Location>.CreateItemAsync(loc);
+                    }
+                }
+            }
+           
+            
+
         }
+    }
+
+    class Location
+    {
+        public string locality;
+        public string sublocality;
+        public double latitude;
+        public double longitude;
     }
 }
